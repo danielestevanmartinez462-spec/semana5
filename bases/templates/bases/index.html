@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo|default:"Crear aprendiz" }}</title>
+   <link rel="stylesheet" href="{% static 'bases/css/estilos.css' %}">
+</head>
+<body>
+    <header class="encabezado">
+        <h1>{{ titulo|default:"Crear aprendiz" }}</h1>
+    </header>
+
+    <main class="contenedor-principal">
+        <section class="formulario-seccion">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="boton-crear">Guardar</button>
+            </form>
+            <p><a href="{% url 'listar_aprendices' %}" class="enlace-volver">Volver al listado</a></p>
+        </section>
+    </main>
+</body>
+</html>

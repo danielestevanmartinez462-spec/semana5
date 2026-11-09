@@ -1,0 +1,351 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mapa Interactivo - Aprendices</title>
+
+    <link rel="stylesheet" href="{% static 'bases/css/mapa.css' %}?v=3">
+
+    <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+</head>
+
+<body>
+
+    <main class="pagina-mapa">
+
+        <section class="panel-mapa">
+
+            <header class="encabezado-mapa">
+
+                <div>
+                    <h1>Mapa <span>Interactivo</span></h1>
+                    <p>Explora ciudades y descubre nuevas ubicaciones</p>
+                </div>
+
+                <div class="decoracion">✦</div>
+
+            </header>
+
+            <div class="contenido-mapa">
+
+                <div class="texto-intro">
+                    <span class="etiqueta">EXPLORADOR GEOGRÁFICO</span>
+                    <h2>Encuentra tu ubicación</h2>
+                    <p>Escribe una ciudad o selecciona un punto directamente en el mapa.</p>
+                </div>
+
+                <form id="formularioBusqueda" class="buscador">
+
+                    <div class="campo-busqueda">
+
+                        <span class="icono-buscar">⌕</span>
+
+                        <input
+                            type="text"
+                            id="ciudad"
+                            placeholder="Ejemplo: Bogotá, Medellín, Cali..."
+                            autocomplete="off"
+                            required
+                        >
+
+                        <button type="submit" class="boton-buscar">
+                            Buscar
+                        </button>
+
+                    </div>
+
+                </form>
+
+                <div id="mensaje" class="mensaje"></div>
+
+                <div class="acciones-mapa">
+
+                    <button
+                        type="button"
+                        class="boton-colombia"
+                        onclick="volverColombia()">
+                        🇨🇴 Ver Colombia
+                    </button>
+
+                    <span class="indicacion">
+                        <span class="punto-verde"></span>
+                        Mapa interactivo
+                    </span>
+
+                </div>
+
+                <div class="marco-mapa">
+
+                    <div class="barra-mapa">
+
+                        <div class="puntos-ventana">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+
+                        <span>EXPLORADOR DE UBICACIONES</span>
+
+                        <span class="estado-mapa">EN LÍNEA</span>
+
+                    </div>
+
+                    <div id="mapa"></div>
+
+                </div>
+
+                <section class="informacion">
+
+                    <div class="datos-ubicacion">
+
+                        <h3>Ubicación seleccionada</h3>
+
+                        <p id="coordenadas">
+                            Haz clic sobre el mapa para seleccionar una ubicación.
+                        </p>
+
+                    </div>
+
+                    <div class="decoracion-info">⌖</div>
+
+                </section>
+
+                <div class="pie-mapa">
+
+                    <a href="/" class="boton-volver">
+                        ← Volver al inicio
+                    </a>
+
+                    <p>Explora, encuentra y selecciona ubicaciones</p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+
+
+        var mapa = L.map('mapa').setView(
+            [4.5709, -74.2973],
+            6
+        );
+
+        L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+            {
+                maxZoom: 19,
+                attribution: 'Tiles &copy; Esri'
+            }
+        ).addTo(mapa);
+
+
+        var marcador = null;
+
+        function seleccionarUbicacion(latitud, longitud, nombre) {
+
+            if (marcador) {
+                mapa.removeLayer(marcador);
+            }
+
+            marcador = L.marker([
+                latitud,
+                longitud
+            ]).addTo(mapa);
+
+            marcador.bindPopup(
+                nombre || 'Ubicación seleccionada'
+            ).openPopup();
+
+            document.getElementById('coordenadas').innerHTML =
+                '<strong>Latitud:</strong> ' + latitud.toFixed(5) +
+                '<br><strong>Longitud:</strong> ' + longitud.toFixed(5);
+
+        }
+        mapa.on('click', function(evento) {
+
+            var latitud = evento.latlng.lat;
+            var longitud = evento.latlng.lng;
+
+            seleccionarUbicacion(
+                latitud,
+                longitud,
+                'Ubicación seleccionada'
+            );
+
+        });
+
+        async function buscarOpenStreetMap(ciudad) {
+
+            var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='
+                + encodeURIComponent(ciudad);
+
+            var respuesta = await fetch(url, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!respuesta.ok) {
+                throw new Error('OpenStreetMap no respondió.');
+            }
+
+            var datos = await respuesta.json();
+
+            if (datos.length === 0) {
+                return null;
+            }
+
+            return {
+                latitud: parseFloat(datos[0].lat),
+                longitud: parseFloat(datos[0].lon),
+                nombre: datos[0].display_name
+            };
+
+        }
+
+        async function buscarPhoton(ciudad) {
+
+            var url = 'https://photon.komoot.io/api/?q='
+                + encodeURIComponent(ciudad)
+                + '&limit=1';
+
+            var respuesta = await fetch(url);
+
+            if (!respuesta.ok) {
+                throw new Error('El segundo buscador no respondió.');
+            }
+
+            var datos = await respuesta.json();
+
+            if (!datos.features || datos.features.length === 0) {
+                return null;
+            }
+
+            var lugar = datos.features[0];
+
+            return {
+                latitud: lugar.geometry.coordinates[1],
+                longitud: lugar.geometry.coordinates[0],
+                nombre: lugar.properties.name || ciudad
+            };
+
+        }
+
+        document.getElementById('formularioBusqueda')
+        .addEventListener('submit', async function(evento) {
+
+            evento.preventDefault();
+
+            var ciudad = document.getElementById('ciudad').value.trim();
+
+            var mensaje = document.getElementById('mensaje');
+
+            var boton = document.querySelector('.boton-buscar');
+
+            if (!ciudad) {
+                mensaje.textContent = 'Escribe el nombre de una ciudad.';
+                return;
+            }
+
+            boton.disabled = true;
+            mensaje.textContent = 'Buscando ubicación...';
+
+            try {
+
+                var lugar = null;
+
+                try {
+
+                    lugar = await buscarOpenStreetMap(ciudad);
+
+                } catch(error) {
+
+                    console.log('Primer buscador no disponible.');
+
+                }
+                if (!lugar) {
+
+                    lugar = await buscarPhoton(ciudad);
+
+                }
+
+                if (!lugar) {
+
+                    mensaje.textContent = 'No encontramos esa ciudad.';
+
+                    return;
+
+                }
+
+                mapa.setView(
+                    [lugar.latitud, lugar.longitud],
+                    13
+                );
+
+                seleccionarUbicacion(
+                    lugar.latitud,
+                    lugar.longitud,
+                    lugar.nombre
+                );
+
+                mensaje.textContent =
+                    'Ciudad encontrada correctamente.';
+
+            } catch(error) {
+
+                console.error(error);
+
+                mensaje.textContent =
+                    'No se pudo buscar. Comprueba tu conexión a internet.';
+
+            } finally {
+
+                boton.disabled = false;
+
+            }
+
+        });
+
+        function volverColombia() {
+
+            mapa.setView(
+                [4.5709, -74.2973],
+                6
+            );
+
+            if (marcador) {
+
+                mapa.removeLayer(marcador);
+                marcador = null;
+
+            }
+
+            document.getElementById('coordenadas').textContent =
+                'Haz clic sobre el mapa para seleccionar una ubicación.';
+
+            document.getElementById('mensaje').textContent = '';
+
+            document.getElementById('ciudad').value = '';
+
+        }
+        setTimeout(function() {
+            mapa.invalidateSize();
+        }, 500);
+
+    </script>
+
+</body>
+</html>

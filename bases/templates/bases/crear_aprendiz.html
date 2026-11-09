@@ -1,0 +1,16 @@
+{% extends 'bases/index.html' %}
+{%load static%}
+
+
+<h1>Crear aprendiz</h1>
+
+<form method="post"  class="formulario-aprendiz">
+
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar</button>
+</form>
+
+<a href="/">Volver a la lista</a>
+
+

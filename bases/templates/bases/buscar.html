@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar aprendiz</title>
+    <link rel="stylesheet" href="{% static 'bases/css/estilos.css' %}">
+</head>
+
+<body>
+    <header class="encabezado">
+        <h1>Buscar aprendiz</h1>
+    </header>
+
+<main class="contenedor-principal">
+
+    <section class="formulario-seccion">
+
+        <h2 style="text-align:center; margin-bottom:25px;">
+             Buscar aprendiz
+        </h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p class="mensaje-exito">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'buscar_aprendiz' %}">
+            {% csrf_token %}
+
+            <p>
+                <label for="documento">Número de documento</label>
+                <input
+                    type="text"
+                    id="documento"
+                    name="documento"
+                    placeholder="Escribe el documento"
+                    required
+                >
+            </p>
+
+            <button type="submit"> Buscar aprendiz</button>
+        </form>
+
+        {% if aprendiz %}
+            <div class="mensaje-exito">
+                Aprendiz encontrado correctamente.
+                <p>{{ aprendiz.nombre }} {{ aprendiz.apellido }}</p>
+                <p>Documento: {{ aprendiz.documento }}</p>
+            </div>
+
+            <a href="{% url 'editar_aprendiz' aprendiz.documento %}"
+               class="boton-editar">Editar</a>
+
+            <a href="{% url 'eliminar_aprendiz' aprendiz.documento %}"
+               class="boton-eliminar">Eliminar</a>
+        {% endif %}
+
+        <a href="{% url 'listar_aprendices' %}" class="enlace-volver">
+            ← Volver al listado
+        </a>
+
+    </section>
+
+</main>
+</body>
+
+</html>

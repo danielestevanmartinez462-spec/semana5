@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Aprendices</title>
+
+    <link rel="stylesheet" href="{% static 'bases/css/estilos.css' %}?v=1000">
+</head>
+
+<body>
+
+    <div class="pagina">
+
+        <header class="encabezado">
+
+            <div class="decoracion-puntos"></div>
+
+            <div class="encabezado-contenido">
+
+                <div class="linea-vertical"></div>
+
+                <div class="titulo-principal">
+                    <h1>Listado de <span>Aprendices</span></h1>
+                    <p>Gestiona y administra la información de los aprendices</p>
+                </div>
+
+            </div>
+
+        </header>
+
+        <main class="contenedor-principal">
+
+            <div class="onda-superior"></div>
+
+            <div class="contenedor-botones">
+
+                <a href="{% url 'crear_aprendiz' %}" class="boton-crear registrar">
+                    <span class="icono">✚</span>
+                    REGISTRAR aprendiz
+                </a>
+
+                <a href="{% url 'buscar_aprendiz' %}" class="boton-crear buscar">
+                    <span class="icono">⌕</span>
+                    BUSCAR aprendiz
+                </a>
+
+                <a href="{% url 'mapa' %}" class="boton-crear mapa">
+                    <span class="icono">●</span>
+                    VER mapa
+                </a>
+
+            </div>
+
+            <section class="tabla-seccion">
+
+                <table class="tabla-aprendices">
+
+                    <thead>
+                        <tr>
+                            <th><span class="icono-tabla">▤</span> DOCUMENTO</th>
+                            <th><span class="icono-tabla">●</span> NOMBRE COMPLETO</th>
+                            <th><span class="icono-tabla">✉</span> CORREO</th>
+                            <th><span class="icono-tabla">★</span> COMPETENCIAS</th>
+                            <th><span class="icono-tabla">▥</span> ESTADO</th>
+                            <th><span class="icono-tabla">✎</span> EDITAR</th>
+                            <th><span class="icono-tabla eliminar-icono">▤</span> ELIMINAR</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for aprendiz in aprendices %}
+
+                        <tr class="fila-aprendiz">
+
+                            <td class="col-documento">
+                                {{ aprendiz.documento }}
+                            </td>
+
+                            <td class="col-nombre">
+                                {{ aprendiz.nombre }} {{ aprendiz.apellido }}
+                            </td>
+
+                            <td class="col-correo">
+                                {{ aprendiz.correo }}
+                            </td>
+
+                            <td class="col-competencias">
+                                <ul>
+                                    {% for competencia in aprendiz.competencias.all %}
+                                        <li>{{ competencia }}</li>
+                                    {% empty %}
+                                        <li class="sin-competencias">
+                                            Sin competencias matriculadas
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+
+                            <td class="col-estado">
+                                {% if aprendiz.activo %}
+                                    <span class="estado activo">Activo</span>
+                                {% else %}
+                                    <span class="estado inactivo">Inactivo</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="col-acciones">
+                                <a href="{% url 'editar_aprendiz' aprendiz.documento %}"
+                                   class="boton-editar">
+                                    <span>✎</span> Editar
+                                </a>
+                            </td>
+
+                            <td class="col-acciones">
+                                <a href="{% url 'eliminar_aprendiz' aprendiz.documento %}"
+                                   class="boton-eliminar">
+                                    <span>▤</span> Eliminar
+                                </a>
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr class="fila-vacia">
+                            <td colspan="7">
+                                No hay aprendices registrados actualmente.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+            <footer class="pie-pagina">
+                <span class="linea-pie"></span>
+                <span class="puntos-pie">● ● ●</span>
+                <span class="linea-pie"></span>
+            </footer>
+
+        </main>
+
+        <div class="onda-inferior"></div>
+
+    </div>
+
+</body>
+</html>

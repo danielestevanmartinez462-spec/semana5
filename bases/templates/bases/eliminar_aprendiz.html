@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Eliminar aprendiz</title>
+    <link rel="stylesheet" href="{% static 'bases/css/estilos.css' %}">
+</head>
+<body>
+    <main class="contenedor-principal">
+        <h2>Eliminar aprendiz</h2>
+
+        <form method="post">
+            {% csrf_token %}
+            <p>¿Seguro que quieres eliminar a {{ aprendiz.nombre }} {{ aprendiz.apellido }}?</p>
+            <button type="submit" class="boton-eliminar">Sí, eliminar</button>
+            <a href="{% url 'listar_aprendices' %}" class="boton-editar">Cancelar</a>
+        </form>
+    </main>
+</body>
+</html>
